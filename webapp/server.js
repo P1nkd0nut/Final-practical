@@ -1,8 +1,27 @@
 const express = require('express');
 const fs = require('fs');
+const { Pool } = require('pg');
 
 const app = express();
 const port = 8080;
+
+// Setup PostgreSQL Connection
+const pool = new Pool({
+    host: process.env.DB_HOST || 'db',
+    user: process.env.DB_USER || 'postgres',
+    password: process.env.DB_PASSWORD || 'postgres',
+    database: process.env.DB_NAME || 'searchdb',
+    port: 5432,
+});
+
+// Initialize the database table (Requirement i)
+pool.query(`
+    CREATE TABLE IF NOT EXISTS "2402041" (
+        id SERIAL PRIMARY KEY,
+        search_query VARCHAR(255) NOT NULL,
+        query_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    )
+`).catch(err => console.error("Database initialization failed:", err));
 
 // Fix 'Fingerprinting' security hotspot
 app.disable('x-powered-by');
@@ -18,7 +37,7 @@ try {
     console.log("Password file missing, continuing without leaked password check.");
 }
 
-app.post('/search', (req, res) => {
+app.post('/search', async (req, res) => {
     const searchTerm = req.body.searchTerm;
 
     // Requirement c: Backend validation (Validate All Inputs)
@@ -33,6 +52,13 @@ app.post('/search', (req, res) => {
     if (attackPattern.test(searchTerm)) {
         // Requirement g: If attack/invalid, return to homepage
         return res.redirect('/');
+    }
+
+    // Requirement i: Store the validated search query and time in table "2402041"
+    try {
+        await pool.query('INSERT INTO "2402041" (search_query) VALUES ($1)', [searchTerm]);
+    } catch (err) {
+        console.error("Failed to insert search query:", err);
     }
 
     // Requirement h: Go to a new page to display the search term and a return button
