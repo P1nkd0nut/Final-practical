@@ -122,6 +122,11 @@ jobs:
   ui-test:
     name: UI Selenium Tests
     runs-on: ubuntu-latest
+    container:
+      image: node:18
+      ports:
+        - 8080:8080
+      options: --network-alias=testserver
     services:
       db:
         image: postgres:15-alpine
@@ -141,19 +146,15 @@ jobs:
         ports:
           - 4444:4444
     env:
-      DB_HOST: localhost
+      DB_HOST: db
       DB_USER: postgres
       DB_PASSWORD: postgres
       DB_NAME: searchdb
-      TEST_BASE_URL: http://localhost:8080
+      TEST_BASE_URL: http://testserver:8080
       SELENIUM_HOST: http://localhost:4444/wd/hub
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
       - name: Install dependencies
         working-directory: ./webapp
         run: npm install
