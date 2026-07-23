@@ -1,5 +1,5 @@
 const express = require('express');
-const fs = require('node:fs');
+
 const { Pool } = require('pg');
 
 const app = express();
