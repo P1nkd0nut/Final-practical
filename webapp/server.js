@@ -14,14 +14,28 @@ const pool = new Pool({
     port: 5432,
 });
 
-// Initialize the database table (Requirement i)
-pool.query(`
-    CREATE TABLE IF NOT EXISTS "2402041" (
-        id SERIAL PRIMARY KEY,
-        search_query VARCHAR(255) NOT NULL,
-        query_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-    )
-`).catch(err => console.error("Database initialization failed:", err));
+// Initialize the database table with retry logic (Requirement i)
+async function initDB() {
+    let retries = 5;
+    while (retries > 0) {
+        try {
+            await pool.query(`
+                CREATE TABLE IF NOT EXISTS "2402041" (
+                    id SERIAL PRIMARY KEY,
+                    search_query VARCHAR(255) NOT NULL,
+                    query_time TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                )
+            `);
+            console.log("Database initialized successfully!");
+            break;
+        } catch (err) {
+            console.error(\`DB Init failed, retrying... (\${retries} left)\`);
+            retries -= 1;
+            await new Promise(res => setTimeout(res, 3000)); // wait 3 seconds
+        }
+    }
+}
+initDB();
 
 // Fix 'Fingerprinting' security hotspot
 app.disable('x-powered-by');
@@ -82,4 +96,7 @@ app.post('/search', async (req, res) => {
     res.send(htmlResponse);
 });
 
-app.listen(port, () => console.log(`Listening on port ${port}`));
+if (require.main === module) {
+    app.listen(port, () => console.log(`Listening on port ${port}`));
+}
+module.exports = app;
