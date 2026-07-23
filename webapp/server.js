@@ -19,7 +19,13 @@ try {
 }
 
 app.post('/login', (req, res) => {
+    const username = req.body.username;
     const password = req.body.password;
+
+    // Check specific admin credentials first
+    if (username === 'admin' && password === '2402041@SIT.singaporetech.edu.sg') {
+        return res.redirect('/welcome.html');
+    }
 
     // 1. Length check
     if (!password || password.length < 8 || password.length > 64) {
