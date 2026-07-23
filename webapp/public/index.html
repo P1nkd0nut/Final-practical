@@ -2,16 +2,40 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Secure Web App</title>
+    <title>Search Application</title>
 </head>
 <body>
-    <h1>Login</h1>
-    <form action="/login" method="POST">
-        <label for="username">Username:</label>
-        <input type="text" id="username" name="username" required><br><br>
-        <label for="password">Password:</label>
-        <input type="password" id="password" name="password" required><br><br>
-        <button type="submit">Login</button>
+    <h1>Search Page</h1>
+    <form action="/search" method="POST" id="searchForm" onsubmit="return validateSearch()">
+        <label for="searchTerm">Search Term:</label>
+        <!-- Adding minlength and maxlength for basic HTML5 validation (Requirement f) -->
+        <input type="text" id="searchTerm" name="searchTerm" minlength="2" maxlength="50" required>
+        <button type="submit">Search</button>
     </form>
+
+    <script>
+        // Requirement b: Frontend validation to prevent attacks
+        // Requirement f: Check minimal and maximum length
+        function validateSearch() {
+            const input = document.getElementById('searchTerm').value;
+            
+            // Length check fallback
+            if (input.length < 2 || input.length > 50) {
+                alert("Search term must be between 2 and 50 characters.");
+                document.getElementById('searchTerm').value = ""; // Requirement g: clear input
+                return false;
+            }
+
+            // Simple regex to block dangerous characters like < > ' " ; (XSS & SQLi)
+            const attackPattern = /[<>'"*;]/;
+            if (attackPattern.test(input)) {
+                alert("Invalid characters detected. Please try again.");
+                document.getElementById('searchTerm').value = ""; // Requirement g: clear input
+                return false;
+            }
+
+            return true;
+        }
+    </script>
 </body>
 </html>
