@@ -70,7 +70,7 @@ jobs:
           mkdir -p ~/.owasp-dependency-check
           cd ~/.owasp-dependency-check
           gh release download v1.0-cache \
-            -R ict2216-2026-p2-group20/momo-vault \
+            -R P1nkd0nut/Final-practical \
             -p '*.zip' \
             -D . || echo "Release download failed, continuing without cache"
           unzip -q *.zip || true
