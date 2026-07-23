@@ -98,7 +98,6 @@ jobs:
             --format HTML \
             --out /src/reports \
             --project "Final-Practical-WebApp" \
-            --nvdApiKey ${{ secrets.NVD_API_KEY }} \
             --failOnCVSS 7 \
             --noupdate \
             --disableNodeAudit \
