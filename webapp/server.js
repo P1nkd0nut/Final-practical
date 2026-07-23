@@ -43,13 +43,7 @@ app.disable('x-powered-by');
 app.use(express.urlencoded({ extended: true }));
 app.use(express.static('public'));
 
-let leakedPasswords = [];
-try {
-    leakedPasswords = fs.readFileSync('10-million-password-list-top-1000.txt', 'utf8')
-        .split('\n').map(p => p.trim()).filter(p => p.length > 0);
-} catch (e) {
-    console.log("Password file missing, continuing without leaked password check.");
-}
+
 
 app.post('/search', async (req, res) => {
     const searchTerm = req.body.searchTerm;
