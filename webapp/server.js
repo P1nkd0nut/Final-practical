@@ -18,33 +18,42 @@ try {
     console.log("Password file missing, continuing without leaked password check.");
 }
 
-app.post('/login', (req, res) => {
-    const username = req.body.username;
-    const password = req.body.password;
+app.post('/search', (req, res) => {
+    const searchTerm = req.body.searchTerm;
 
-    // Check specific admin credentials first
-    if (username === 'admin' && password === '2402041@SIT.singaporetech.edu.sg') {
-        return res.redirect('/welcome.html');
+    // Requirement c: Backend validation (Validate All Inputs)
+    // Requirement f: Length checks
+    if (!searchTerm || searchTerm.length < 2 || searchTerm.length > 50) {
+        // Requirement g: If attack/invalid, return to homepage
+        return res.redirect('/');
     }
 
-    // 1. Length check
-    if (!password || password.length < 8 || password.length > 64) {
-        return res.send(`<h2>Login Failed</h2><p>Password must be between 8 and 64 characters.</p>`);
+    // Block dangerous characters (SQLi / XSS)
+    const attackPattern = /[<>'"*;]/;
+    if (attackPattern.test(searchTerm)) {
+        // Requirement g: If attack/invalid, return to homepage
+        return res.redirect('/');
     }
 
-    // 2. Complexity check
-    const hasLetter = /[a-zA-Z]/.test(password);
-    const hasNumber = /\d/.test(password);
-    if (!hasLetter || !hasNumber) {
-        return res.send(`<h2>Login Failed</h2><p>Password must contain at least one letter and one number.</p>`);
-    }
+    // Requirement h: Go to a new page to display the search term and a return button
+    // To prevent XSS on reflection, we strictly validated the input above, but it's 
+    // good practice to encode output. We'll rely on the strict allowlist/blocklist.
+    const htmlResponse = `
+    <!DOCTYPE html>
+    <html lang="en">
+    <head>
+        <meta charset="UTF-8">
+        <title>Search Results</title>
+    </head>
+    <body>
+        <h1>Search Results</h1>
+        <p>You searched for: <strong>${searchTerm}</strong></p>
+        <a href="/"><button>Return to Homepage</button></a>
+    </body>
+    </html>
+    `;
 
-    // 3. Leaked password check
-    if (leakedPasswords.includes(password)) {
-        return res.send(`<h2>Login Failed</h2><p>This password is too common or has been leaked.</p>`);
-    }
-
-    res.redirect('/welcome.html');
+    res.send(htmlResponse);
 });
 
 app.listen(port, () => console.log(`Listening on port ${port}`));
