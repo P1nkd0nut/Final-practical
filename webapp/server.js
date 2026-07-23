@@ -1,5 +1,5 @@
 const express = require('express');
-const fs = require('fs');
+const fs = require('node:fs');
 const { Pool } = require('pg');
 
 const app = express();
@@ -29,7 +29,7 @@ async function initDB() {
             console.log("Database initialized successfully!");
             break;
         } catch (err) {
-            console.error(`DB Init failed, retrying... (${retries} left)`);
+            console.error(`DB Init failed, retrying... (${retries} left)`, err.message);
             retries -= 1;
             await new Promise(res => setTimeout(res, 3000)); // wait 3 seconds
         }
